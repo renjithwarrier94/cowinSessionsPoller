@@ -1,0 +1,29 @@
+{
+    "sessions": [
+        {
+            "center_id": 249054,
+            "name": "Gopalpura PHC",
+            "state_name": "Karnataka",
+            "district_name": "Bangalore Urban",
+            "block_name": "Bengaluru North",
+            "pincode": 562123,
+            "from": "10:00:00",
+            "to": "16:00:00",
+            "lat": 13,
+            "long": 77,
+            "fee_type": "Free",
+            "session_id": "32b05d33-5557-4beb-b9c5-09f1a8220df4",
+            "date": "04-05-2021",
+            "available_capacity": 48,
+            "fee": "0",
+            "min_age_limit": 45,
+            "vaccine": "COVISHIELD",
+            "slots": [
+                "10:00AM-11:00AM",
+                "11:00AM-12:00PM",
+                "12:00PM-01:00PM",
+                "01:00PM-04:00PM"
+            ]
+        }
+    ]
+}
