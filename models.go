@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 type SessionModel struct {
 	CenterId          int      `json:"center_id"`
 	Name              string   `json:"name"`
@@ -23,4 +28,25 @@ type SessionModel struct {
 
 type SessionsResponse struct {
 	Sessions []SessionModel `json:"sessions"`
+}
+
+// Define an alias for a slice of SessionModel
+type Sessions []SessionModel
+
+func (sessions Sessions) String() string {
+	builder := strings.Builder{}
+
+	for _, s := range sessions {
+		builder.WriteString(fmt.Sprintf(
+			"\nCenter name: %s\nPincode: %d\nFee: %s\nVaccine: %s\nSlots: %v\n",
+			s.Name,
+			s.Pincode,
+			s.Fee,
+			s.Vaccine,
+			s.Slots,
+		),
+		)
+	}
+
+	return builder.String()
 }

@@ -13,14 +13,11 @@ import (
 	"time"
 )
 
-const (
-	requestURL          = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict"
-	bangaloreDistrictID = "265"
-)
-
 func main() {
 	// HTTP Client
 	client := http.Client{}
+	// Get messenger clients
+	messengerClients := GetSignalMessagerClients(&client)
 	// Create a context
 	ctx, cancel := context.WithCancel(context.Background())
 	// Create a wait group
@@ -29,25 +26,25 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		queryRunningSessionsContinuously(ctx, &client, 0*time.Hour, "today")
+		queryRunningSessionsContinuously(ctx, &client, 0*time.Hour, "today", messengerClients)
 	}()
 	// Slots for tomorrow
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		queryRunningSessionsContinuously(ctx, &client, 24*time.Hour, "tomorrow")
+		queryRunningSessionsContinuously(ctx, &client, 24*time.Hour, "tomorrow", messengerClients)
 	}()
 	// Slots for day after tomorrow
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		queryRunningSessionsContinuously(ctx, &client, 48*time.Hour, "dayAfterTomorrow")
+		queryRunningSessionsContinuously(ctx, &client, 48*time.Hour, "dayAfterTomorrow", messengerClients)
 	}()
 	// Slots for 2 days from now
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		queryRunningSessionsContinuously(ctx, &client, 72*time.Hour, "twoDaysFromNow")
+		queryRunningSessionsContinuously(ctx, &client, 72*time.Hour, "twoDaysFromNow", messengerClients)
 	}()
 	// Wait until Ctrl+C
 	c := make(chan os.Signal, 1)
@@ -61,24 +58,34 @@ func main() {
 	wg.Wait()
 }
 
-func queryRunningSessionsContinuously(ctx context.Context, client *http.Client, requestFor time.Duration, timeFrameName string) {
+func queryRunningSessionsContinuously(ctx context.Context, client *http.Client, requestFor time.Duration, timeFrameName string, messengerClients []*SignalMessager) {
 	// Run continuously
 	for {
 		// Get current time
 		now := time.Now()
 		// Get te required time
 		requestDate := now.Add(requestFor)
-		_, err := getEligileOpenSlotsFor(client, requestDate)
+		sessions, err := getEligileOpenSlotsFor(client, requestDate)
 		if err != nil {
 			log.Print(err)
 		}
+		// Send a message to each client only if there are slots
+		if len(sessions) > 0 {
+			for _, messengerClient := range messengerClients {
+				messengerClient.SendSessions(sessions, requestDate)
+			}
+		}
 		// Log the run
-		log.Printf("Executed for %s", timeFrameName)
+		log.Printf("Executed for %s. Sessions: %d", timeFrameName, len(sessions))
+		// If we have found a session, there is no need to runn again
+		if len(sessions) > 0 {
+			return
+		}
 		// Wait for interval or until the context is done
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(6 * time.Second):
+		case <-time.After(runIntervalSeconds * time.Second):
 		}
 	}
 }
@@ -96,7 +103,7 @@ func getEligileOpenSlotsFor(client *http.Client, requestDate time.Time) ([]Sessi
 	eligibleSessions := []SessionModel{}
 	// Look for sessions with min age <= 27
 	for _, session := range sessions {
-		if session.MinAgeLimit <= 27 {
+		if isSessionEligible(session) {
 			eligibleSessions = append(eligibleSessions, session)
 		}
 	}
