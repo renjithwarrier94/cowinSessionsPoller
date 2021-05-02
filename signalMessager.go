@@ -56,9 +56,17 @@ func (s *SignalMessager) SendSessions(sessions Sessions, date time.Time) {
 	// Add it
 	request.URL.RawQuery = q.Encode()
 	// Send the request
-	_, err = s.httpClient.Do(request)
+	resp, err := s.httpClient.Do(request)
 	if err != nil {
 		log.Printf("Error while pushing to signal: %v", err)
 		return
+	}
+	// Close the body
+	defer resp.Body.Close()
+	// Check the status code
+	if resp.StatusCode != 200 {
+		// Print the result
+		log.Printf("Non 200 response when trying to push to signal: %d", resp.StatusCode)
+		log.Printf("Failed to send: \n%s", sessions.String())
 	}
 }

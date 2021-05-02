@@ -10,6 +10,8 @@ const (
 	bangaloreDistrictID = "294"
 	// Run interval
 	runIntervalSeconds = 60
+	// Sleep interval when a match is found
+	sleepIntervalOnSuccessSeconds = 10 * 60
 )
 
 // Configs related to the messenger API

@@ -59,8 +59,10 @@ func main() {
 }
 
 func queryRunningSessionsContinuously(ctx context.Context, client *http.Client, requestFor time.Duration, timeFrameName string, messengerClients []*SignalMessager) {
+	var workerRunInterval int
 	// Run continuously
 	for {
+		workerRunInterval = runIntervalSeconds
 		// Get current time
 		now := time.Now()
 		// Get te required time
@@ -77,15 +79,15 @@ func queryRunningSessionsContinuously(ctx context.Context, client *http.Client, 
 		}
 		// Log the run
 		log.Printf("Executed for %s. Sessions: %d", timeFrameName, len(sessions))
-		// If we have found a session, there is no need to runn again
+		// If we have found a session, wait longer to poll again as we do not want to spam
 		if len(sessions) > 0 {
-			return
+			workerRunInterval = sleepIntervalOnSuccessSeconds
 		}
 		// Wait for interval or until the context is done
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(runIntervalSeconds * time.Second):
+		case <-time.After(time.Duration(workerRunInterval) * time.Second):
 		}
 	}
 }
