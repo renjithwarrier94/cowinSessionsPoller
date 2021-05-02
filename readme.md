@@ -8,4 +8,20 @@ configs.go file can be used to configure the working of this component. The dist
 
 # Working
 
-This component polls the public sessions [API](https://apisetu.gov.in/public/api/cowin) exposed by cowin.
+This component polls the public sessions [API](https://apisetu.gov.in/public/api/cowin) exposed by cowin. It sets up workers to poll the sessions avaible today, tommorrow, day after and 2 days from now. If it finds sessions that match our filter criteria, it initiates a notification via Signal App. 
+
+# Running
+
+The simplest way to run is to just install go, clone the repo, change to the project directory and run using the command:
+```
+go run .
+```
+
+If you want to deploy this somewhere, the project can be built using:
+```
+go build .
+```
+Then the built binary can be run using the command:
+```
+./cowinSessionsPoller
+```
