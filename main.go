@@ -126,6 +126,7 @@ func fireRequest(client *http.Client, date string) ([]SessionModel, error) {
 	// Add required headers
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Accept-Language", "en_US")
+	request.Header.Add("User-Agent", "PostmanRuntime/7.28.0")
 	// Fire the request
 	resp, err := client.Do(request)
 	if err != nil {
